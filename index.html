@@ -34,7 +34,9 @@
   #hud{position:absolute;top:8px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:4}
   #hearts{display:flex;gap:5px}
   .hslot{width:22px;height:22px;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4))}
-  #mute{pointer-events:auto;cursor:pointer;background:rgba(42,24,48,.7);border:2px solid var(--gold);color:var(--gold);border-radius:7px;font-family:inherit;font-size:10px;padding:6px 8px}
+  #hudBtns{display:flex;gap:6px;pointer-events:auto}
+  #mute,#restart{pointer-events:auto;cursor:pointer;background:rgba(42,24,48,.7);border:2px solid var(--gold);color:var(--gold);border-radius:7px;font-family:inherit;font-size:10px;padding:6px 8px}
+  #restart{font-size:13px;padding:4px 9px}
 
   .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px 22px;gap:18px;z-index:6}
   .overlay.hidden{display:none}
@@ -70,7 +72,10 @@
     <canvas id="game" width="720" height="528"></canvas>
     <div id="hud">
       <div id="hearts"></div>
-      <button id="mute">♪ ON</button>
+      <div id="hudBtns">
+        <button id="restart" title="Reiniciar desde el inicio">↺</button>
+        <button id="mute">♪ ON</button>
+      </div>
     </div>
     <div class="overlay" id="startScreen">
       <div class="title" id="startTitle"></div>
@@ -461,6 +466,14 @@ function resetGame(){ collected=0;state='play'; hero.fx=7*TILE+TILE/2;hero.fy=9*
   chests.forEach(c=>c.open=false); mela.visible=false; renderHUD(); initPetals();
   document.getElementById('endScreen').classList.add('hidden');
   document.getElementById('ringText').classList.add('hidden'); }
+function goToStart(){ collected=0; state='start';
+  hero.fx=7*TILE+TILE/2; hero.fy=9*TILE+38; hero.dir='up';
+  chests.forEach(c=>c.open=false); mela.visible=false; renderHUD();
+  card.classList.remove('show');
+  document.getElementById('endScreen').classList.add('hidden');
+  document.getElementById('ringText').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden'); }
+document.getElementById('restart').addEventListener('click',goToStart);
 document.getElementById('startTitle').innerHTML='La Leyenda<br>del <span style="color:#f5a6cc">Amor Eterno</span>';
 document.getElementById('startSub').textContent=CONFIG.intro;
 renderHUD(); initPetals();

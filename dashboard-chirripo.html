@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b3720">
+<title>Chirripó 2027 · Entrenamiento</title>
+<style>
+  :root{
+    --night:#2b3720; --slate:#333f24; --slate2:#3f4d2e; --line:#51603c;
+    --snow:#f2efe3; --mist:#a9b492; --mist2:#869072;
+    --dawn:#e7ad55; --dawn2:#d98a3c; --paramo:#a6c94b; --ice:#8fa6dd;
+    --heather:#4bb6a4; --rest:#8c9a72;
+    --ring-bg:#47563a;
+    --radius:16px; --radius-sm:11px;
+    --gut:16px; --maxw:520px;
+    font-synthesis-weight:none;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--night); color:var(--snow);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45; -webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums; letter-spacing:.005em;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+  .tnum{font-variant-numeric:tabular-nums}
+  button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  a{color:var(--ice);text-decoration:none}
+  svg{display:block}
+  .icon{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;
+        stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+  /* ---------- HEADER (persistent) ---------- */
+  header{
+    position:sticky;top:0;z-index:40;
+    background:linear-gradient(180deg,#2b3720 60%,rgba(43,55,32,.86) 100%);
+    backdrop-filter:saturate(140%) blur(6px);
+    border-bottom:1px solid var(--line);
+    padding-top:env(safe-area-inset-top);
+  }
+  .hbar{display:flex;align-items:center;gap:10px;height:52px}
+  .hbar .peakmark{color:var(--dawn);font-size:20px;display:flex}
+  .htitle{font-weight:700;font-size:15px;letter-spacing:.02em}
+  .htitle small{display:block;font-weight:500;font-size:11px;color:var(--mist);letter-spacing:.04em}
+  .hcount{margin-left:auto;text-align:right;line-height:1}
+  .hcount b{font-size:20px;font-weight:800;color:var(--dawn)}
+  .hcount span{display:block;font-size:9.5px;color:var(--mist);letter-spacing:.14em;margin-top:3px}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;padding:20px 0 8px;overflow:hidden}
+  .hero-glow{position:absolute;inset:-40% -20% auto -20%;height:220px;
+    background:radial-gradient(120% 90% at 70% 0%,rgba(166,201,75,.20),rgba(231,173,85,.07) 45%,transparent 72%);
+    pointer-events:none;z-index:0}
+  .hero-inner{position:relative;z-index:1}
+  .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--dawn);font-weight:700;text-transform:uppercase}
+  .hero h1{font-size:30px;line-height:1.04;font-weight:800;letter-spacing:-.01em;margin:6px 0 2px}
+  .hero .sub{color:var(--mist);font-size:13px}
+
+  .cd{display:flex;gap:8px;margin:16px 0 6px}
+  .cd .cell{flex:1;background:var(--slate);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:10px 4px 8px;text-align:center}
+  .cd .cell b{font-size:26px;font-weight:800;letter-spacing:-.02em;display:block}
+  .cd .cell span{font-size:9.5px;color:var(--mist);letter-spacing:.12em;text-transform:uppercase}
+  .cd .cell.big b{color:var(--dawn)}
+
+  /* elevation profile */
+  .profile-card{background:var(--slate);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 12px 10px;margin-top:12px}
+  .profile-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px}
+  .profile-head .t{font-size:12.5px;font-weight:700}
+  .profile-head .l{font-size:10.5px;color:var(--mist)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin:10px 2px 2px}
+  .legend i{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mist)}
+  .legend i::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--c)}
+
+  /* ---------- SECTION TITLES ---------- */
+  .sec{margin:26px 0 12px;display:flex;align-items:center;gap:9px}
+  .sec .ic{color:var(--dawn);font-size:18px;display:flex}
+  .sec h2{font-size:16px;font-weight:750;letter-spacing:.01em}
+  .sec .hint{margin-left:auto;font-size:11px;color:var(--mist)}
+
+  /* ---------- WEEK CARD ---------- */
+  .card{background:var(--slate);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;margin-bottom:12px}
+  .card.now{border-color:rgba(246,178,92,.55);box-shadow:0 0 0 1px rgba(246,178,92,.25),0 8px 30px -18px rgba(246,178,92,.6)}
+  .wk-head{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left}
+  .wk-head .no{width:34px;height:34px;flex:none;border-radius:9px;background:var(--slate2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--snow)}
+  .card.now .wk-head .no{background:linear-gradient(150deg,var(--dawn),var(--dawn2));color:#241300}
+  .wk-meta{min-width:0;flex:1}
+  .wk-meta .l1{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+  .wk-meta .l2{font-size:11px;color:var(--mist);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip{font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:999px;
+    background:color-mix(in srgb,var(--fc) 20%,transparent);color:var(--fc);white-space:nowrap}
+  .ring{width:38px;height:38px;flex:none}
+  .ring text{font-size:11px;font-weight:800;fill:var(--snow)}
+  .chev{color:var(--mist);font-size:18px;transition:transform .22s ease;flex:none}
+  .card.open .chev{transform:rotate(180deg)}
+
+  .wk-body{display:none;padding:2px 14px 14px;border-top:1px solid var(--line)}
+  .card.open .wk-body{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+  .targets{display:flex;gap:8px;margin:12px 0}
+  .targets .t{flex:1;background:var(--slate2);border-radius:10px;padding:8px 10px}
+  .targets .t b{font-size:17px;font-weight:800;display:block;line-height:1.1}
+  .targets .t span{font-size:10px;color:var(--mist);letter-spacing:.05em}
+  .enfoque{font-size:12px;color:var(--mist);margin:2px 2px 12px;display:flex;gap:7px}
+  .enfoque .icon{color:var(--dawn);margin-top:2px}
+
+  .grp-l{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);margin:12px 2px 8px;font-weight:700}
+
+  /* session toggle rows */
+  .sess{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;text-align:left;
+    background:var(--slate2);border:1px solid transparent;border-radius:11px;margin-bottom:8px;
+    transition:border-color .15s,background .15s}
+  .sess .bic{width:30px;height:30px;flex:none;border-radius:8px;display:flex;align-items:center;
+    justify-content:center;font-size:16px;background:color-mix(in srgb,var(--sc) 18%,transparent);color:var(--sc)}
+  .sess .txt{flex:1;min-width:0}
+  .sess .txt b{font-size:13px;font-weight:650;display:block}
+  .sess .txt span{font-size:11px;color:var(--mist);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sess .box{width:24px;height:24px;flex:none;border-radius:7px;border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:transparent;transition:.15s}
+  .sess.on{border-color:color-mix(in srgb,var(--paramo) 55%,transparent);
+    background:color-mix(in srgb,var(--paramo) 10%,var(--slate2))}
+  .sess.on .box{background:var(--paramo);border-color:var(--paramo);color:#06231a}
+  .sess.on .box .icon{width:14px;height:14px;stroke-width:3}
+
+  /* pesas week row */
+  .pesas{display:flex;align-items:center;gap:9px;background:var(--slate2);border-radius:11px;padding:11px 12px}
+  .pesas .bic{width:30px;height:30px;flex:none;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:16px;background:color-mix(in srgb,var(--heather) 18%,transparent);color:var(--heather)}
+  .pesas .days{display:flex;gap:6px;margin-left:auto}
+  .pday{width:30px;height:34px;border-radius:8px;border:1.5px solid var(--line);background:transparent;
+    color:var(--mist);font-size:12px;font-weight:750;display:flex;align-items:center;justify-content:center;transition:.13s}
+  .pday.on{background:var(--heather);border-color:var(--heather);color:#06231d}
+  .pesas .lbl{min-width:0}
+  .pesas .lbl b{font-size:13px;font-weight:650;display:block}
+  .pesas .lbl span{font-size:11px;color:var(--mist)}
+
+  /* reminder callout */
+  .warn{display:flex;gap:9px;align-items:flex-start;background:color-mix(in srgb,var(--dawn2) 12%,var(--slate));
+    border:1px solid color-mix(in srgb,var(--dawn2) 40%,transparent);border-radius:11px;padding:10px 12px;margin:12px 0 4px}
+  .warn .icon{color:var(--dawn2);flex:none;margin-top:1px}
+  .warn div{font-size:11.5px;line-height:1.5}
+  .warn b{color:var(--dawn)}
+
+  /* ---------- KEY HIKES TIMELINE ---------- */
+  .tl{position:relative;padding-left:34px}
+  .tl::before{content:"";position:absolute;left:14px;top:8px;bottom:20px;width:2px;
+    background:linear-gradient(var(--ice),var(--dawn) 60%,var(--dawn2))}
+  .tl .node{position:relative;margin-bottom:14px}
+  .tl .dot{position:absolute;left:-27px;top:16px;width:16px;height:16px;border-radius:50%;
+    background:var(--slate);border:3px solid var(--dawn);display:flex;align-items:center;justify-content:center}
+  .tl .node.done .dot{background:var(--paramo);border-color:var(--paramo)}
+  .tl .node.next .dot{box-shadow:0 0 0 5px rgba(246,178,92,.18)}
+  .tl .dot .icon{width:8px;height:8px;color:#06231a;stroke-width:4;opacity:0}
+  .tl .node.done .dot .icon{opacity:1}
+  .hk{background:var(--slate);border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px}
+  .tl .node.next .hk{border-color:rgba(246,178,92,.5)}
+  .hk .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .hk .date{font-size:12px;font-weight:800;color:var(--dawn)}
+  .hk .badge{font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:999px;text-transform:uppercase}
+  .hk .badge.next{background:var(--dawn);color:#241300}
+  .hk .badge.done{background:color-mix(in srgb,var(--paramo) 22%,transparent);color:var(--paramo)}
+  .hk .badge.bb{background:color-mix(in srgb,var(--dawn2) 22%,transparent);color:var(--dawn2)}
+  .hk h3{font-size:14.5px;font-weight:750;line-height:1.2}
+  .hk .stats{display:flex;gap:14px;margin:8px 0}
+  .hk .stats div b{font-size:15px;font-weight:800}
+  .hk .stats div span{font-size:10px;color:var(--mist);display:block;letter-spacing:.04em}
+  .hk .obj{font-size:12px;color:var(--mist)}
+  .hk .cd2{margin-top:9px;font-size:11px;color:var(--mist);display:flex;align-items:center;gap:7px}
+  .hk .cd2 b{color:var(--dawn);font-size:13px}
+  .hk .hkbtn{margin-top:11px;width:100%;padding:9px;border-radius:9px;font-size:12.5px;font-weight:700;
+    background:var(--slate2);color:var(--snow);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:7px}
+  .hk .hkbtn.done{background:color-mix(in srgb,var(--paramo) 16%,var(--slate));border-color:var(--paramo);color:var(--paramo)}
+
+  /* ---------- ROUTES ---------- */
+  .rt{background:var(--slate);border:1px solid var(--line);border-radius:var(--radius);padding:13px;margin-bottom:11px}
+  .rt .top{display:flex;align-items:flex-start;gap:9px}
+  .rt .top .icon{color:var(--paramo);margin-top:2px;flex:none}
+  .rt h3{font-size:14px;font-weight:750;line-height:1.2}
+  .rt .zona{font-size:11px;color:var(--mist);margin-top:1px}
+  .rt .stats{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+  .rt .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--slate2);color:var(--snow);display:inline-flex;gap:5px;align-items:center}
+  .rt .pill.dif{color:var(--dawn)}
+  .rt .cuando{font-size:11.5px;color:var(--ice);margin-bottom:6px}
+  .rt .notas{font-size:11.5px;color:var(--mist);line-height:1.5}
+  .rt .src{display:inline-flex;align-items:center;gap:6px;font-size:11px;margin-top:9px}
+
+  /* ---------- STATS PANEL ---------- */
+  .panel{background:var(--slate);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:12px}
+  .bigprog{display:flex;align-items:center;gap:16px}
+  .bigring{width:78px;height:78px;flex:none}
+  .bigring text.p{font-size:19px;font-weight:800;fill:var(--snow)}
+  .bigring text.s{font-size:7px;fill:var(--mist);letter-spacing:.1em}
+  .bigprog .info b{font-size:14px;font-weight:750}
+  .bigprog .info p{font-size:12px;color:var(--mist);margin-top:3px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .kpi{background:var(--slate2);border-radius:11px;padding:11px 12px}
+  .kpi b{font-size:20px;font-weight:800;display:block;line-height:1}
+  .kpi span{font-size:10.5px;color:var(--mist);letter-spacing:.03em;margin-top:5px;display:block}
+  .kpi .icon{color:var(--dawn);width:15px;height:15px;margin-bottom:6px}
+
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+  .tbtn{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px;border-radius:11px;background:var(--slate2);border:1px solid var(--line);
+    font-size:12.5px;font-weight:700;color:var(--snow)}
+  .tbtn.danger{color:var(--dawn2)}
+  .tbtn .icon{width:16px;height:16px}
+
+  .note{font-size:11px;color:var(--mist);line-height:1.55;margin-top:12px}
+  .note b{color:var(--snow)}
+
+  /* ---------- TAB BAR ---------- */
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:rgba(47,58,36,.93);backdrop-filter:blur(12px) saturate(140%);
+    border-top:1px solid var(--line);
+    padding:7px var(--gut) calc(7px + env(safe-area-inset-bottom));
+    display:flex;justify-content:center;gap:4px}
+  nav.tabs .inner{display:flex;justify-content:space-around;width:100%;max-width:var(--maxw)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;
+    color:var(--mist);font-size:10px;font-weight:650;letter-spacing:.02em;border-radius:10px}
+  .tab .icon{width:22px;height:22px;stroke-width:1.9}
+  .tab.on{color:var(--dawn)}
+  .tab.on .icon{stroke-width:2.3}
+
+  .view{animation:vin .22s ease}
+  @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .empty{text-align:center;color:var(--mist);font-size:12px;padding:20px}
+
+  :focus-visible{outline:2px solid var(--dawn);outline-offset:2px;border-radius:8px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
+    background:var(--slate2);border:1px solid var(--line);color:var(--snow);font-size:12.5px;font-weight:600;
+    padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:60;box-shadow:0 10px 30px -10px #000}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .draw{stroke-dasharray:1700;stroke-dashoffset:1700;animation:draw 1.3s cubic-bezier(.3,0,.2,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <defs>
+  <symbol id="i-mtn" viewBox="0 0 24 24"><path d="M3 20h18L14 6l-3 5-2-3-6 12z"/><path d="M11 11l1.5-2.5"/></symbol>
+  <symbol id="i-boot" viewBox="0 0 24 24"><path d="M4 4v9l-1 4a2 2 0 0 0 2 2h13a3 3 0 0 0 3-3c0-2-2-3-4-3.5S11 11 11 8V4z"/><path d="M4 13h7"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2 12h4l2-6 4 12 2-6h8"/></symbol>
+  <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M4 8v8M8 6v12M16 6v12M20 8v8M8 12h8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 18h6a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V8m0 0l-4 4m4-4l4 4M5 4h14"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></symbol>
+  <symbol id="i-chevd" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 6 .5l2-2a4 4 0 0 0-6-6l-1 1"/><path d="M14 10a4 4 0 0 0-6-.5l-2 2a4 4 0 0 0 6 6l1-1"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5zM9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+ </defs>
+</svg>
+
+<header>
+  <div class="wrap hbar">
+    <span class="peakmark"><svg class="icon"><use href="#i-mtn"/></svg></span>
+    <div class="htitle">Chirripó 2027<small id="hsub">Camino a la cima</small></div>
+    <div class="hcount"><b class="tnum" id="hdr-days">—</b><span>DÍAS A LA CIMA</span></div>
+  </div>
+</header>
+
+<main class="wrap"><div id="view"></div></main>
+
+<nav class="tabs"><div class="inner">
+  <button class="tab" data-tab="hoy"><svg class="icon"><use href="#i-home"/></svg>Hoy</button>
+  <button class="tab" data-tab="plan"><svg class="icon"><use href="#i-list"/></svg>Plan</button>
+  <button class="tab" data-tab="cam"><svg class="icon"><use href="#i-flag"/></svg>Caminatas</button>
+  <button class="tab" data-tab="rutas"><svg class="icon"><use href="#i-route"/></svg>Rutas</button>
+</div></nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {"meta": {"planStart": "2026-09-14", "summit": "2027-03-26T00:00:00-06:00", "summitDateLabel": "26–28 mar 2027", "peak": "Cerro Chirripó · 3 820 m", "tripFormat": "3 días / 2 noches · 1 noche hotel + 1 noche Base Crestones", "kmAcum": 347, "picoSemanal": 29.3, "nCaminatas": 7, "nTaper": 2}, "weeks": [{"n": 1, "inicio": "2026-09-14", "fin": "2026-09-20", "fase": "Base", "km": 6, "dplus": 250, "c1": "Z2 suave · caminadora/bici/elíptica", "c1m": 25, "c2": "Inclinación suave 4–6%", "c2m": 25, "cam": "Miramar / La Isla – caminata continua", "camkm": 6, "dom": "Descanso o movilidad", "domkm": 0, "intensidad": "Base", "enfoque": "Adaptarte sin sumar fatiga al gimnasio"}, {"n": 2, "inicio": "2026-09-21", "fin": "2026-09-27", "fase": "Base", "km": 7, "dplus": 350, "c1": "Z2 suave", "c1m": 25, "c2": "6×2 min de cuesta", "c2m": 25, "cam": "Ruta local continua", "camkm": 7, "dom": "Descanso", "domkm": 0, "intensidad": "Base", "enfoque": "Ritmo conversacional"}, {"n": 3, "inicio": "2026-09-28", "fin": "2026-10-04", "fase": "Base", "km": 8, "dplus": 450, "c1": "Z2 suave", "c1m": 25, "c2": "6×3 min de cuesta", "c2m": 25, "cam": "Ruta local con pendiente", "camkm": 8, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Primer bloque de desnivel"}, {"n": 4, "inicio": "2026-10-05", "fin": "2026-10-11", "fase": "Descarga", "km": 6, "dplus": 250, "c1": "Z2 muy suave", "c1m": 25, "c2": "Inclinación suave", "c2m": 25, "cam": "Miramar–La Isla / Sabana", "camkm": 6, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Recuperar junto con la fuerza"}, {"n": 5, "inicio": "2026-10-12", "fin": "2026-10-18", "fase": "Construcción", "km": 9, "dplus": 500, "c1": "Z2 estable", "c1m": 25, "c2": "8×2 min de cuesta", "c2m": 25, "cam": "Boquerones / ruta equivalente", "camkm": 9, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Subida sostenida"}, {"n": 6, "inicio": "2026-10-19", "fin": "2026-10-25", "fase": "Construcción", "km": 11, "dplus": 700, "c1": "Z2 estable", "c1m": 25, "c2": "8×3 min de cuesta", "c2m": 25, "cam": "Cerro El Encanto – ruta larga", "camkm": 11, "dom": "Descanso", "domkm": 0, "intensidad": "Alta", "enfoque": "Primera caminata intensa real"}, {"n": 7, "inicio": "2026-10-26", "fin": "2026-11-01", "fase": "Construcción", "km": 11, "dplus": 800, "c1": "Z2 estable", "c1m": 25, "c2": "6×4 min de cuesta", "c2m": 25, "cam": "Ruta local larga con pendiente", "camkm": 11, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Tiempo de pie + desnivel"}, {"n": 8, "inicio": "2026-11-02", "fin": "2026-11-08", "fase": "Descarga", "km": 8, "dplus": 400, "c1": "Z2 suave", "c1m": 25, "c2": "Inclinación suave", "c2m": 25, "cam": "Ruta local fácil", "camkm": 8, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Recuperación"}, {"n": 9, "inicio": "2026-11-09", "fin": "2026-11-15", "fase": "Construcción", "km": 12, "dplus": 800, "c1": "Z2 estable", "c1m": 25, "c2": "8×4 min de cuesta", "c2m": 25, "cam": "Ruta local larga / Encanto según condiciones", "camkm": 12, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Tolerancia a 3–4 h"}, {"n": 10, "inicio": "2026-11-16", "fin": "2026-11-22", "fase": "Construcción", "km": 15, "dplus": 1100, "c1": "Z2 estable", "c1m": 25, "c2": "8×4 min de cuesta", "c2m": 25, "cam": "Bosques del Río Zapotal x Miramar", "camkm": 13.2, "dom": "Recuperación muy suave", "domkm": 1.8, "intensidad": "Alta", "enfoque": "Desnivel fuerte; practicar hidratación"}, {"n": 11, "inicio": "2026-11-23", "fin": "2026-11-29", "fase": "Construcción", "km": 14, "dplus": 900, "c1": "Z2 estable", "c1m": 25, "c2": "5×5 min de cuesta", "c2m": 25, "cam": "Ruta larga con subida sostenida", "camkm": 14, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Caminar eficiente en pendiente"}, {"n": 12, "inicio": "2026-11-30", "fin": "2026-12-06", "fase": "Descarga", "km": 11, "dplus": 500, "c1": "Z2 suave", "c1m": 25, "c2": "Cuestas suaves", "c2m": 25, "cam": "Cerro El Encanto o ruta 11 km", "camkm": 11, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Descarga activa"}, {"n": 13, "inicio": "2026-12-07", "fin": "2026-12-13", "fase": "Específica", "km": 14.6, "dplus": 1200, "c1": "Z2 estable", "c1m": 25, "c2": "6×5 min de cuesta", "c2m": 25, "cam": "Miramar – Laguna", "camkm": 14.6, "dom": "Descanso", "domkm": 0, "intensidad": "Alta", "enfoque": "Subida larga continua"}, {"n": 14, "inicio": "2026-12-14", "fin": "2026-12-20", "fase": "Específica", "km": 14, "dplus": 1280, "c1": "Z2 estable", "c1m": 25, "c2": "6×5 min de cuesta", "c2m": 25, "cam": "Miramar – Tubú – Zapotal", "camkm": 14, "dom": "Descanso", "domkm": 0, "intensidad": "Alta", "enfoque": "Pendiente prolongada sin competir"}, {"n": 15, "inicio": "2026-12-21", "fin": "2026-12-27", "fase": "Específica", "km": 15, "dplus": 1000, "c1": "Z2 estable", "c1m": 25, "c2": "4×6 min de cuesta", "c2m": 25, "cam": "Ruta de 15 km con desnivel", "camkm": 15, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Ritmo constante 4–5 h"}, {"n": 16, "inicio": "2026-12-28", "fin": "2027-01-03", "fase": "Descarga", "km": 10, "dplus": 500, "c1": "Z2 suave", "c1m": 25, "c2": "Cuestas suaves", "c2m": 25, "cam": "Ruta local 10 km", "camkm": 10, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Semana ligera"}, {"n": 17, "inicio": "2027-01-04", "fin": "2027-01-10", "fase": "Específica", "km": 14, "dplus": 900, "c1": "Z2 estable", "c1m": 25, "c2": "4×6 min de cuesta", "c2m": 25, "cam": "Ruta 14 km con desnivel moderado", "camkm": 14, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Mochila 4–5 kg; control de esfuerzo"}, {"n": 18, "inicio": "2027-01-11", "fin": "2027-01-17", "fase": "Específica", "km": 17.9, "dplus": 1000, "c1": "Z2 estable", "c1m": 25, "c2": "4×8 min de cuesta", "c2m": 25, "cam": "Cerro Alto Zapotal por Miramar", "camkm": 17.9, "dom": "Descanso", "domkm": 0, "intensidad": "Alta", "enfoque": "Mochila + bastones; practicar bajadas"}, {"n": 19, "inicio": "2027-01-18", "fin": "2027-01-24", "fase": "Específica", "km": 14, "dplus": 800, "c1": "Z2 estable", "c1m": 25, "c2": "4×6 min moderadas", "c2m": 25, "cam": "Ruta 14 km moderada", "camkm": 14, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Semana puente: moderada, no buscar récord"}, {"n": 20, "inicio": "2027-01-25", "fin": "2027-01-31", "fase": "Simulación", "km": 25.3, "dplus": 1500, "c1": "Z2 muy suave", "c1m": 25, "c2": "Cuestas moderadas", "c2m": 25, "cam": "Miramar → Zapotal / Camino de Montes de Oro", "camkm": 17.3, "dom": "Caminata suave con desnivel", "domkm": 8, "intensidad": "Muy alta", "enfoque": "Back-to-back #1 · sin pierna pesada viernes"}, {"n": 21, "inicio": "2027-02-01", "fin": "2027-02-07", "fase": "Descarga", "km": 10, "dplus": 500, "c1": "Z2 suave", "c1m": 25, "c2": "Cuestas suaves", "c2m": 25, "cam": "Ruta fácil-media", "camkm": 10, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Recuperar del bloque"}, {"n": 22, "inicio": "2027-02-08", "fin": "2027-02-14", "fase": "Simulación", "km": 27.9, "dplus": 1600, "c1": "Z2 suave", "c1m": 25, "c2": "Cuestas moderadas", "c2m": 25, "cam": "Cerro Alto Zapotal", "camkm": 17.9, "dom": "Caminata al día siguiente", "domkm": 10, "intensidad": "Muy alta", "enfoque": "Back-to-back #2 · simular fatiga"}, {"n": 23, "inicio": "2027-02-15", "fin": "2027-02-21", "fase": "Específica", "km": 14, "dplus": 800, "c1": "Z2 estable", "c1m": 25, "c2": "4×5 min controladas", "c2m": 25, "cam": "Ruta 14 km con bajada prolongada", "camkm": 14, "dom": "Descanso", "domkm": 0, "intensidad": "Media", "enfoque": "Priorizar técnica de descenso"}, {"n": 24, "inicio": "2027-02-22", "fin": "2027-02-28", "fase": "Simulación", "km": 29.3, "dplus": 1800, "c1": "Z2 muy suave", "c1m": 25, "c2": "Cuestas muy controladas", "c2m": 25, "cam": "Miramar → Zapotal / ruta larga", "camkm": 17.3, "dom": "Caminata larga con bajada", "domkm": 12, "intensidad": "Muy alta", "enfoque": "Simulación final · 2 días consecutivos"}, {"n": 25, "inicio": "2027-03-01", "fin": "2027-03-07", "fase": "Recuperación", "km": 10, "dplus": 500, "c1": "Z2 suave", "c1m": 25, "c2": "Inclinación suave", "c2m": 25, "cam": "Ruta cómoda 10 km", "camkm": 10, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Recuperación post simulación"}, {"n": 26, "inicio": "2027-03-08", "fin": "2027-03-14", "fase": "Taper", "km": 8, "dplus": 400, "c1": "Z2 suave", "c1m": 20, "c2": "4×3 min breves", "c2m": 20, "cam": "Ruta cómoda 8 km", "camkm": 8, "dom": "Descanso", "domkm": 0, "intensidad": "Baja", "enfoque": "Reducir volumen, mantener sensación de ritmo"}, {"n": 27, "inicio": "2027-03-15", "fin": "2027-03-21", "fase": "Taper", "km": 5, "dplus": 150, "c1": "Z2 muy suave", "c1m": 20, "c2": "Sin cuestas; Z1/Z2", "c2m": 15, "cam": "Caminata 5 km muy suave", "camkm": 5, "dom": "Descanso", "domkm": 0, "intensidad": "Muy baja", "enfoque": "Nada intenso; llegar fresca"}, {"n": 28, "inicio": "2027-03-22", "fin": "2027-03-28", "fase": "Viaje", "km": 0, "dplus": 0, "c1": "Activación muy suave (lun/mar)", "c1m": 15, "c2": "Descanso", "c2m": 0, "cam": "26–28 MAR · CHIRRIPÓ (según itinerario de la guía)", "camkm": 0, "dom": "Seguir itinerario del guía", "domkm": 0, "intensidad": "Viaje", "enfoque": "Viaje: no añadir entrenamiento"}], "hikes": [{"fecha": "2026-10-24", "semana": 6, "ruta": "Cerro El Encanto – ruta larga", "kmSab": 11, "dplus": "≥700 m objetivo", "domingo": "Descanso", "kmDom": 0, "objetivo": "Primera prueba larga de 4–6 h", "ajuste": "No pierna pesada jue/vie; sábado cuenta como cardio 3"}, {"fecha": "2026-11-21", "semana": 10, "ruta": "Bosques del Río Zapotal x Miramar", "kmSab": 13.2, "dplus": "≈1.111 m", "domingo": "Recuperación muy suave", "kmDom": 1.8, "objetivo": "Tolerar subida larga + nutrición", "ajuste": "Viernes solo tren superior o descanso de piernas"}, {"fecha": "2026-12-12", "semana": 13, "ruta": "Miramar – Laguna", "kmSab": 14.6, "dplus": "≈1.214 m", "domingo": "Descanso", "kmDom": 0, "objetivo": "Subida prolongada con ritmo estable", "ajuste": "Reduce el cardio del jueves si llegas cargada de piernas"}, {"fecha": "2027-01-16", "semana": 18, "ruta": "Cerro Alto Zapotal por Miramar", "kmSab": 17.9, "dplus": "≈1.002 m", "domingo": "Descanso", "kmDom": 0, "objetivo": "5–6 h con mochila + descensos", "ajuste": "Mochila 4–5 kg; no pierna pesada viernes"}, {"fecha": "2027-01-30", "semana": 20, "ruta": "Miramar → Zapotal / etapa larga", "kmSab": 17.3, "dplus": "≥1.200 m objetivo", "domingo": "Caminata suave con desnivel", "kmDom": 8, "objetivo": "Back-to-back #1", "ajuste": "La caminata reemplaza cardio 3; domingo sin fuerza"}, {"fecha": "2027-02-13", "semana": 22, "ruta": "Cerro Alto Zapotal", "kmSab": 17.9, "dplus": "≈1.002 m", "domingo": "Caminata al día siguiente", "kmDom": 10, "objetivo": "Back-to-back #2 · fatiga controlada", "ajuste": "Semana de fuerza sin llegar al fallo en piernas"}, {"fecha": "2027-02-27", "semana": 24, "ruta": "Miramar → Zapotal / ruta larga", "kmSab": 17.3, "dplus": "≥1.200 m objetivo", "domingo": "Caminata larga con bajada", "kmDom": 12, "objetivo": "Simulación final de 2 días", "ajuste": "Último bloque realmente duro; después comienza recuperación/taper"}], "routes": [{"ruta": "Miramar – La Isla / Sabana", "zona": "Miramar", "dist": "5,8–6,3 km", "dplus": "105–159 m", "dif": "Baja / base", "cuando": "Septiembre–octubre; base/recuperación", "notas": "Ruta comunitaria; útil para sumar km sin fatiga excesiva.", "fuente": "https://es.wikiloc.com/rutas/senderismo/costa-rica/puntarenas/miramar?page=2&t=0"}, {"ruta": "Cerro El Encanto – ruta larga", "zona": "La Unión, Montes de Oro", "dist": "11 km", "dplus": "N/D", "dif": "Alta · 4–6 h", "cuando": "Octubre–noviembre; caminata clave 24/10", "notas": "La Municipalidad indica nivel avanzado; verificar reserva/guía y condiciones.", "fuente": "https://montesdeoro.go.cr/caminata-al-cerro-el-encanto/"}, {"ruta": "Boquerones", "zona": "Bajo Caliente, Miramar", "dist": "≈9 km", "dplus": "N/D", "dif": "Medio–avanzado", "cuando": "Octubre–noviembre; construcción", "notas": "Servicio con guía local según sitio municipal; reservar con anticipación.", "fuente": "https://montesdeoro.go.cr/boquerones/"}, {"ruta": "Bosques del Río Zapotal x Miramar", "zona": "Miramar / Zapotal", "dist": "13,21 km", "dplus": "1.111 m", "dif": "Difícil", "cuando": "Noviembre; caminata clave 21/11", "notas": "Subida fuerte al inicio; ruta comunitaria GPS. No asumir acceso sin verificar.", "fuente": "https://es.wikiloc.com/rutas-senderismo/bosques-del-rio-zapotal-x-miramar-27530990"}, {"ruta": "Miramar – Laguna", "zona": "Miramar / Laguna", "dist": "14,61 km", "dplus": "1.214 m", "dif": "Exigente (registro comunitario)", "cuando": "Diciembre; caminata clave 12/12", "notas": "Trazado comunitario; revisar ruta actual y retorno antes de salir.", "fuente": "https://es.wikiloc.com/rutas/senderismo/costa-rica/puntarenas/miramar?page=2&t=0"}, {"ruta": "Miramar – Tubú – Zapotal", "zona": "Miramar / Zapotal", "dist": "14,02 km", "dplus": "1.280 m", "dif": "Exigente (registro comunitario)", "cuando": "Diciembre–enero; específica", "notas": "Muy útil para desnivel; confirmar acceso y condiciones.", "fuente": "https://es.wikiloc.com/rutas/senderismo/costa-rica/puntarenas/miramar?page=2&t=0"}, {"ruta": "Cerro Alto Zapotal por Miramar", "zona": "Miramar / Zapotal", "dist": "17,88 km", "dplus": "1.002 m", "dif": "Difícil", "cuando": "Enero–febrero; clave 16/01 y 13/02", "notas": "Primeros ~6 km con fuerte ascenso; usar como simulación larga.", "fuente": "https://es.wikiloc.com/rutas/senderismo/costa-rica/puntarenas/miramar"}, {"ruta": "Camino de Montes de Oro · etapa Miramar → Zapotal", "zona": "Miramar / Zapotal", "dist": "17,3 km", "dplus": "N/D", "dif": "Avanzado · 6–7 h", "cuando": "Enero–febrero; back-to-back 30/01 y simulación 27/02", "notas": "Ruta guiada/comercial; ideal como referencia de jornada larga punto a punto.", "fuente": "https://urritrekcostarica.com/es/products/camino-de-montes-de-oro-6-days-hike"}]};
+
+/* ---------------- state ---------------- */
+const LS_KEY = "chirripo_train_v1";
+let state = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {weeks:{},hikes:{}}; }catch(e){ return {weeks:{},hikes:{}}; } }
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast("No se pudo guardar (almacenamiento bloqueado)"); } }
+function wkState(n){ if(!state.weeks[n]) state.weeks[n]={c1:false,c2:false,cam:false,cam2:false,p:[false,false,false,false,false]}; return state.weeks[n]; }
+
+/* ---------------- dates ---------------- */
+const SUMMIT = new Date(DATA.meta.summit);
+const PLAN_START = new Date(DATA.meta.planStart+"T00:00:00-06:00");
+function parse(d){ return new Date(d+"T00:00:00-06:00"); }
+function today(){ const t=new Date(); return t; }
+function daysTo(d){ return Math.ceil((d - today())/86400000); }
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","set","oct","nov","dic"];
+const DIAS=["dom","lun","mar","mié","jue","vie","sáb"];
+function fmt(dStr){ const d=parse(dStr); return d.getDate()+" "+MESES[d.getMonth()]; }
+function fmtFull(dStr){ const d=parse(dStr); return DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+d.getFullYear(); }
+
+/* ---------------- week logic ---------------- */
+function sessionsOf(w){
+  const s=[];
+  if(w.n===28){ // viaje / cima
+    if(w.c1m>0) s.push({key:"c1",ic:"i-pulse",c:"var(--ice)",t:w.c1,sub:"Lun/Mar · "+w.c1m+" min"});
+    s.push({key:"cam",ic:"i-mtn",c:"var(--dawn)",t:"Cumbre · Cerro Chirripó",sub:w.cam});
+    return {cardio:s,pesas:0};
+  }
+  if(w.c1m>0) s.push({key:"c1",ic:"i-pulse",c:"var(--ice)",t:"Cardio 1 · Martes",sub:w.c1+" · "+w.c1m+" min"});
+  if(w.c2m>0 && !/descanso/i.test(w.c2)) s.push({key:"c2",ic:"i-pulse",c:"var(--ice)",t:"Cardio 2 · Jueves",sub:w.c2+" · "+w.c2m+" min"});
+  s.push({key:"cam",ic:"i-boot",c:"var(--paramo)",t:"Caminata · Fin de semana",sub:w.cam+(w.camkm?" · "+w.camkm+" km":"")});
+  if(w.domkm>0) s.push({key:"cam2",ic:"i-boot",c:"var(--paramo)",t:"2.º día · Domingo",sub:w.dom+" · "+w.domkm+" km"});
+  return {cardio:s, pesas:5};
+}
+function weekTotals(w){ const s=sessionsOf(w); return s.cardio.length + s.pesas; }
+function weekDone(w){
+  const st=wkState(w.n); const s=sessionsOf(w); let d=0;
+  s.cardio.forEach(x=>{ if(st[x.key]) d++; });
+  for(let i=0;i<s.pesas;i++) if(st.p[i]) d++;
+  return d;
+}
+function currentWeek(){
+  const t=today();
+  for(const w of DATA.weeks){ const a=parse(w.inicio), b=new Date(parse(w.fin).getTime()+86399000); if(t>=a && t<=b) return w.n; }
+  if(t<PLAN_START) return 0;      // pre-plan
+  return 29;                       // after trip
+}
+function globalTotals(){ let done=0,tot=0; DATA.weeks.forEach(w=>{ tot+=weekTotals(w); done+=weekDone(w); }); return {done,tot}; }
+function weeksCompleted(){ let c=0; DATA.weeks.forEach(w=>{ if(weekDone(w)>=weekTotals(w)) c++; }); return c; }
+
+/* phase colors */
+const PHASE={
+ "Base":"var(--ice)","Descarga":"var(--rest)","Construcción":"var(--paramo)",
+ "Específica":"#c9b94e","Simulación":"var(--dawn2)","Recuperación":"var(--rest)",
+ "Taper":"var(--heather)","Viaje":"var(--dawn)"
+};
+function phaseColor(f){ return PHASE[f]||"var(--mist)"; }
+
+/* hikes */
+function nextHike(){ const t=today(); let best=null;
+  DATA.hikes.forEach(h=>{ if(!state.hikes[h.fecha] && parse(h.fecha)>=new Date(t.getTime()-86399000)){ if(!best||parse(h.fecha)<parse(best.fecha)) best=h; }});
+  return best;
+}
+
+/* ---------------- svg helpers ---------------- */
+function ring(pct,size,sw,id){
+  const r=(size-sw)/2, c=2*Math.PI*r, off=c*(1-pct);
+  const col = pct>=1?"var(--paramo)":"var(--dawn)";
+  return `<svg class="ring" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--ring-bg)" stroke-width="${sw}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"
+      transform="rotate(-90 ${size/2} ${size/2})"/>
+    <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${Math.round(pct*100)}</text></svg>`;
+}
+function bigRing(pct){
+  const size=78,sw=8,r=(size-sw)/2,c=2*Math.PI*r,off=c*(1-pct);
+  const col= pct>=1?"var(--paramo)":"var(--dawn)";
+  return `<svg class="bigring" viewBox="0 0 ${size} ${size}">
+   <circle cx="39" cy="39" r="${r}" fill="none" stroke="var(--ring-bg)" stroke-width="${sw}"/>
+   <circle cx="39" cy="39" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"
+     stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 39 39)"/>
+   <text class="p" x="50%" y="46%" text-anchor="middle" dominant-baseline="central">${Math.round(pct*100)}%</text>
+   <text class="s" x="50%" y="65%" text-anchor="middle">GLOBAL</text></svg>`;
+}
+function elevationProfile(){
+  const W=496,H=150,padB=26,padT=14,padX=6;
+  const ws=DATA.weeks, max=1800;
+  const n=ws.length;
+  const x=i=> padX + i*( (W-2*padX)/(n-1) );
+  const y=v=> padT + (1 - v/max)*(H-padT-padB);
+  let line="", area=`M ${x(0)} ${H-padB} `;
+  ws.forEach((w,i)=>{ const px=x(i), py=y(w.dplus); line+=(i?"L":"M")+px+" "+py+" "; area+="L "+px+" "+py+" "; });
+  area+=`L ${x(n-1)} ${H-padB} Z`;
+  const cw=currentWeek();
+  // key hike flags
+  const hikeWeeks={}; DATA.hikes.forEach(h=>hikeWeeks[h.semana]=h);
+  let flags="";
+  ws.forEach((w,i)=>{ if(hikeWeeks[w.n]){ const px=x(i),py=y(w.dplus);
+    flags+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${py-13}" stroke="var(--dawn)" stroke-width="1.4"/>
+            <path d="M${px} ${py-13} l7 2.4 -7 2.4 z" fill="var(--dawn)"/>
+            <circle cx="${px}" cy="${py}" r="2.6" fill="var(--dawn)"/>`; }});
+  // you-are-here marker
+  let hiker="";
+  if(cw>=1 && cw<=28){ const i=cw-1; const px=x(i),py=y(ws[i].dplus);
+    hiker=`<circle cx="${px}" cy="${py}" r="6.5" fill="none" stroke="var(--snow)" stroke-width="2"/>
+           <circle cx="${px}" cy="${py}" r="3" fill="var(--snow)"/>
+           <text x="${px}" y="${py-12}" text-anchor="middle" fill="var(--snow)" font-size="9" font-weight="800">AQUÍ</text>`;
+  }
+  // gridlines
+  let grid="";
+  [500,1000,1500].forEach(v=>{ const gy=y(v);
+    grid+=`<line x1="${padX}" y1="${gy}" x2="${W-padX}" y2="${gy}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 4"/>
+           <text x="${padX}" y="${gy-3}" fill="var(--mist)" font-size="8">${v} m</text>`; });
+  // week ticks (every ~4)
+  let ticks="";
+  [1,7,14,20,28].forEach(wn=>{ const i=wn-1; ticks+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" fill="var(--mist)" font-size="8.5">S${wn}</text>`; });
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const lineEl = `<path d="${line}" fill="none" stroke="var(--paramo)" stroke-width="2.2" stroke-linejoin="round" ${reduce?"":'class="draw"'}/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Perfil de desnivel de las 28 semanas">
+    <defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--paramo)" stop-opacity=".40"/>
+      <stop offset="1" stop-color="var(--paramo)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}
+    <path d="${area}" fill="url(#gfill)"/>
+    ${lineEl}
+    ${flags}${ticks}${hiker}
+  </svg>`;
+}
+
+/* ---------------- renderers ---------------- */
+function sessRow(wn,x,on){
+  return `<button class="sess ${on?'on':''}" data-wk="${wn}" data-key="${x.key}" aria-pressed="${on}" style="--sc:${x.c}">
+    <span class="bic"><svg class="icon"><use href="#${x.ic}"/></svg></span>
+    <span class="txt"><b>${x.t}</b><span>${esc(x.sub)}</span></span>
+    <span class="box"><svg class="icon"><use href="#i-check"/></svg></span></button>`;
+}
+function pesasRow(wn){
+  const st=wkState(wn), L=["L","M","M","J","V"];
+  const days=L.map((d,i)=>`<button class="pday ${st.p[i]?'on':''}" data-wk="${wn}" data-p="${i}" aria-pressed="${st.p[i]}" aria-label="Pesas día ${i+1}">${d}</button>`).join("");
+  const done=st.p.filter(Boolean).length;
+  return `<div class="pesas" style="--heather:var(--heather)">
+    <span class="bic"><svg class="icon"><use href="#i-dumbbell"/></svg></span>
+    <span class="lbl"><b>Pesas</b><span id="pw-${wn}">${done}/5 días</span></span>
+    <span class="days">${days}</span></div>`;
+}
+function weekBody(w){
+  const s=sessionsOf(w); const st=wkState(w.n);
+  let cardio = s.cardio.map(x=>sessRow(w.n,x,!!st[x.key])).join("");
+  let targets = w.n===28
+    ? `<div class="targets"><div class="t"><b>26–28</b><span>MAR 2027</span></div><div class="t"><b>≈24,7</b><span>KM DÍA CIMA</span></div></div>`
+    : `<div class="targets"><div class="t"><b>${nf(w.km)}</b><span>KM OBJETIVO</span></div><div class="t"><b>${w.dplus}</b><span>D+ METROS</span></div><div class="t"><b>${w.intensidad}</b><span>INTENSIDAD</span></div></div>`;
+  let warn="";
+  const hikeThisWeek = DATA.hikes.find(h=>h.semana===w.n);
+  if(hikeThisWeek) warn=`<div class="warn"><svg class="icon"><use href="#i-warn"/></svg>
+     <div><b>Caminata clave esta semana.</b> ${esc(hikeThisWeek.ajuste)}</div></div>`;
+  return `<div class="wk-body">
+    ${targets}
+    <div class="enfoque"><svg class="icon"><use href="#i-target"/></svg><span>${esc(w.enfoque)}</span></div>
+    ${warn}
+    <div class="grp-l">Cardio · caminata</div>${cardio}
+    ${s.pesas?`<div class="grp-l">Fuerza (5×semana)</div>${pesasRow(w.n)}`:""}
+  </div>`;
+}
+function weekCard(w,open,isNow){
+  const done=weekDone(w),tot=weekTotals(w),pct=tot?done/tot:0;
+  return `<div class="card ${isNow?'now':''} ${open?'open':''}" id="wk-${w.n}">
+    <button class="wk-head" data-toggle="${w.n}" aria-expanded="${open}">
+      <span class="no">${w.n===28?'★':w.n}</span>
+      <span class="wk-meta">
+        <span class="l1">Semana ${w.n} <span class="chip" style="--fc:${phaseColor(w.fase)}">${w.fase}</span></span>
+        <span class="l2">${fmt(w.inicio)} – ${fmt(w.fin)} · ${w.n===28?'¡La cima!':nf(w.km)+' km · '+w.dplus+' m D+'}</span>
+      </span>
+      <span id="ring-${w.n}">${ring(pct,38,4)}</span>
+      <span class="chev"><svg class="icon"><use href="#i-chevd"/></svg></span>
+    </button>
+    ${weekBody(w)}</div>`;
+}
+
+function viewHoy(){
+  const cw=currentWeek();
+  const g=globalTotals(), pct=g.tot?g.done/g.tot:0;
+  const nh=nextHike();
+  const curW = (cw>=1&&cw<=28)?DATA.weeks[cw-1]:(cw===0?DATA.weeks[0]:null);
+
+  let hero=`<section class="hero"><div class="hero-glow"></div><div class="hero-inner">
+    <div class="eyebrow">Expedición · ${DATA.meta.summitDateLabel}</div>
+    <h1>Camino al<br>Cerro Chirripó</h1>
+    <div class="sub">${DATA.meta.peak.split('·')[1].trim()} · el punto más alto de Costa Rica</div>
+    <div class="cd" id="cd-summit">
+      <div class="cell big"><b class="tnum" id="cd-d">–</b><span>días</span></div>
+      <div class="cell"><b class="tnum" id="cd-h">–</b><span>horas</span></div>
+      <div class="cell"><b class="tnum" id="cd-m">–</b><span>min</span></div>
+      <div class="cell"><b class="tnum" id="cd-s">–</b><span>seg</span></div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-head"><span class="t">Perfil de desnivel · 28 semanas</span><span class="l">D+ objetivo por semana</span></div>
+      ${elevationProfile()}
+      <div class="legend">
+        <i style="--c:var(--dawn)">Caminata clave</i>
+        <i style="--c:var(--snow)">Semana actual</i>
+        <i style="--c:var(--paramo)">Construcción</i>
+        <i style="--c:var(--dawn2)">Simulación</i>
+      </div>
+    </div>
+  </div></section>`;
+
+  let semTitle = cw===0?`Arranca en ${daysTo(PLAN_START)} días`:(cw>28?"Plan completado":"Tu semana");
+  let semBlock = curW ? `
+    <div class="sec"><span class="ic"><svg class="icon"><use href="#i-cal"/></svg></span><h2>${cw===0?'Semana 1 · próxima':'Esta semana'}</h2><span class="hint">${semTitle}</span></div>
+    ${weekCard(curW,true,true)}` : `<div class="empty">¡Ya estás en el viaje! Seguí el itinerario del guía. 🏔️</div>`;
+
+  let hikeBlock = nh ? `
+    <div class="sec"><span class="ic"><svg class="icon"><use href="#i-flag"/></svg></span><h2>Próxima caminata pesada</h2></div>
+    <div class="hk" style="border-color:rgba(246,178,92,.5)">
+      <div class="top"><span class="date">${fmtFull(nh.fecha)}</span><span class="badge next">EN ${daysTo(parse(nh.fecha))} DÍAS</span></div>
+      <h3>${esc(nh.ruta)}</h3>
+      <div class="stats">
+        <div><b>${nf(nh.kmSab)}${nh.kmDom>0?'+'+nf(nh.kmDom):''}</b><span>KM${nh.kmDom>0?' (2 días)':''}</span></div>
+        <div><b>${esc(String(nh.dplus).replace('≈','').replace(' objetivo','').trim())}</b><span>D+ REF.</span></div>
+      </div>
+      <div class="obj">${esc(nh.objetivo)}</div>
+      <div class="warn"><svg class="icon"><use href="#i-warn"/></svg><div><b>Regla clave:</b> ${esc(nh.ajuste)}. Evitá pierna pesada 24–48 h antes.</div></div>
+    </div>` : "";
+
+  let statBlock = `
+    <div class="sec"><span class="ic"><svg class="icon"><use href="#i-pulse"/></svg></span><h2>Progreso</h2></div>
+    <div class="panel"><div class="bigprog">${bigRing(pct)}
+      <div class="info"><b>${g.done} de ${g.tot} sesiones</b>
+        <p>${weeksCompleted()} de 28 semanas completadas al 100 %</p></div></div>
+      <div class="kpis">
+        <div class="kpi"><svg class="icon"><use href="#i-boot"/></svg><b>${DATA.meta.kmAcum}</b><span>km de caminata en el plan</span></div>
+        <div class="kpi"><svg class="icon"><use href="#i-mtn"/></svg><b>${nf(DATA.meta.picoSemanal)}</b><span>km · pico semanal</span></div>
+        <div class="kpi"><svg class="icon"><use href="#i-flag"/></svg><b>${DATA.meta.nCaminatas}</b><span>caminatas / simulaciones</span></div>
+        <div class="kpi"><svg class="icon"><use href="#i-clock"/></svg><b>${DATA.meta.nTaper}</b><span>semanas de taper</span></div>
+      </div>
+    </div>`;
+
+  return `<div class="view">${hero}${semBlock}${hikeBlock}${statBlock}</div>`;
+}
+
+function viewPlan(){
+  const cw=currentWeek();
+  const g=globalTotals(), pct=g.tot?g.done/g.tot:0;
+  let head=`<div class="sec" style="margin-top:18px"><span class="ic"><svg class="icon"><use href="#i-list"/></svg></span><h2>Plan · 28 semanas</h2></div>
+    <div class="panel"><div class="bigprog">${bigRing(pct)}
+      <div class="info"><b>${Math.round(pct*100)}% del plan marcado</b><p>${weeksCompleted()}/28 semanas al 100 % · ${g.done}/${g.tot} sesiones</p></div></div></div>`;
+  // group by phase in order
+  let out="", lastPhase=null;
+  DATA.weeks.forEach(w=>{
+    if(w.fase!==lastPhase){ lastPhase=w.fase;
+      out+=`<div class="grp-l" style="margin-top:16px;color:${phaseColor(w.fase)}">Fase · ${w.fase}</div>`;
+    }
+    out+=weekCard(w, w.n===cw, w.n===cw);
+  });
+  return `<div class="view">${head}${out}</div>`;
+}
+
+function viewCam(){
+  const t=today(); const nh=nextHike();
+  let out=`<div class="sec" style="margin-top:18px"><span class="ic"><svg class="icon"><use href="#i-flag"/></svg></span><h2>Caminatas pesadas</h2><span class="hint">7 compromisos</span></div>
+   <div class="warn" style="margin:0 0 16px"><svg class="icon"><use href="#i-warn"/></svg><div>La caminata del sábado <b>reemplaza tu 3.º cardio</b>. Evitá pierna pesada 24–48 h antes; movela al inicio de la semana.</div></div>
+   <div class="tl">`;
+  DATA.hikes.forEach(h=>{
+    const done=!!state.hikes[h.fecha];
+    const isNext = nh && nh.fecha===h.fecha;
+    const dd=daysTo(parse(h.fecha));
+    const bb = h.kmDom>0;
+    let badge = done?`<span class="badge done">Hecha</span>`
+      : isNext?`<span class="badge next">Próxima · ${dd} d</span>`
+      : (bb?`<span class="badge bb">Back-to-back</span>`:``);
+    out+=`<div class="node ${done?'done':''} ${isNext?'next':''}">
+      <span class="dot"><svg class="icon"><use href="#i-check"/></svg></span>
+      <div class="hk">
+        <div class="top"><span class="date">${fmtFull(h.fecha)}</span>${badge}</div>
+        <h3>${esc(h.ruta)}</h3>
+        <div class="stats">
+          <div><b>${nf(h.kmSab)}${h.kmDom>0?'+'+nf(h.kmDom):''}</b><span>KM${h.kmDom>0?' · 2 DÍAS':''}</span></div>
+          <div><b>${esc(String(h.dplus).replace(' objetivo','').trim())}</b><span>D+ REF.</span></div>
+          <div><b>S${h.semana}</b><span>SEMANA</span></div>
+        </div>
+        <div class="obj">🎯 ${esc(h.objetivo)}</div>
+        <button class="hkbtn ${done?'done':''}" data-hike="${h.fecha}">
+          <svg class="icon" style="width:15px;height:15px"><use href="#${done?'i-check':'i-flag'}"/></svg>
+          ${done?'Completada — tocar para deshacer':'Marcar como completada'}</button>
+      </div></div>`;
+  });
+  out+=`</div>`;
+  return `<div class="view">${out}</div>`;
+}
+
+function viewRutas(){
+  let out=`<div class="sec" style="margin-top:18px"><span class="ic"><svg class="icon"><use href="#i-route"/></svg></span><h2>Rutas de entrenamiento</h2></div>
+    <div class="note" style="margin:0 0 14px">Miramar y Montes de Oro. Los valores de rutas comunitarias pueden variar por trazado GPS — confirmá estado, acceso y necesidad de guía antes de cada salida.</div>`;
+  DATA.routes.forEach(r=>{
+    out+=`<div class="rt">
+      <div class="top"><svg class="icon"><use href="#i-route"/></svg>
+        <div><h3>${esc(r.ruta)}</h3><div class="zona">${esc(r.zona)}</div></div></div>
+      <div class="stats">
+        <span class="pill"><svg class="icon" style="width:13px;height:13px"><use href="#i-boot"/></svg>${esc(r.dist)}</span>
+        <span class="pill"><svg class="icon" style="width:13px;height:13px"><use href="#i-mtn"/></svg>${esc(r.dplus)} D+</span>
+        <span class="pill dif">${esc(r.dif)}</span>
+      </div>
+      <div class="cuando"><svg class="icon" style="width:12px;height:12px;display:inline;vertical-align:-2px"><use href="#i-cal"/></svg> ${esc(r.cuando)}</div>
+      <div class="notas">${esc(r.notas)}</div>
+      ${r.fuente?`<a class="src" href="${r.fuente}" target="_blank" rel="noopener"><svg class="icon" style="width:13px;height:13px"><use href="#i-link"/></svg>Ver ruta / fuente</a>`:""}
+    </div>`;
+  });
+  // tools panel
+  const g=globalTotals();
+  out+=`<div class="sec" style="margin-top:22px"><span class="ic"><svg class="icon"><use href="#i-bag"/></svg></span><h2>Datos y respaldo</h2></div>
+   <div class="panel">
+    <div class="tools">
+      <button class="tbtn" id="btn-export"><svg class="icon"><use href="#i-down"/></svg>Exportar respaldo</button>
+      <button class="tbtn" id="btn-import"><svg class="icon"><use href="#i-up"/></svg>Importar respaldo</button>
+      <button class="tbtn danger" id="btn-reset"><svg class="icon"><use href="#i-reset"/></svg>Reiniciar todo</button>
+    </div>
+    <input type="file" id="file-import" accept="application/json" style="display:none">
+    <div class="note"><b>Tu progreso se guarda en este dispositivo</b> (navegador). Para pasarlo a otro teléfono o hacer copia, usá <b>Exportar</b> y luego <b>Importar</b> el archivo. Marcadas: ${g.done}/${g.tot} sesiones.</div>
+   </div>`;
+  return `<div class="view">${out}</div>`;
+}
+
+/* ---------------- helpers ---------------- */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function nf(n){ if(n==null)return""; const s=(typeof n==="number")?(Number.isInteger(n)?n.toString():n.toString().replace(".",",")):String(n); return s; }
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),1900); }
+
+/* ---------------- targeted updates ---------------- */
+function refreshWeekRing(n){
+  const w=DATA.weeks.find(x=>x.n===n); if(!w)return;
+  const done=weekDone(w),tot=weekTotals(w),pct=tot?done/tot:0;
+  const holder=document.getElementById("ring-"+n); if(holder) holder.innerHTML=ring(pct,38,4);
+  const pw=document.getElementById("pw-"+n); if(pw){ const d=wkState(n).p.filter(Boolean).length; pw.textContent=d+"/5 días"; }
+}
+function refreshGlobals(){
+  // re-render only if on hoy/plan panels present
+  const cw=currentWeek();
+}
+
+/* ---------------- events ---------------- */
+let ACTIVE="hoy";
+function render(){
+  const v=document.getElementById("view");
+  v.innerHTML = ACTIVE==="hoy"?viewHoy():ACTIVE==="plan"?viewPlan():ACTIVE==="cam"?viewCam():viewRutas();
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.tab===ACTIVE));
+  window.scrollTo(0,0);
+  wireDynamic();
+}
+function wireDynamic(){
+  const ei=document.getElementById("btn-export"); if(ei) ei.onclick=doExport;
+  const ii=document.getElementById("btn-import"); if(ii) ii.onclick=()=>document.getElementById("file-import").click();
+  const fi=document.getElementById("file-import"); if(fi) fi.onchange=doImport;
+  const ri=document.getElementById("btn-reset"); if(ri) ri.onclick=doReset;
+}
+
+document.getElementById("view").addEventListener("click",e=>{
+  const head=e.target.closest("[data-toggle]");
+  if(head){ const card=head.closest(".card"); card.classList.toggle("open");
+    head.setAttribute("aria-expanded",card.classList.contains("open")); return; }
+
+  const sess=e.target.closest(".sess");
+  if(sess){ const n=+sess.dataset.wk,k=sess.dataset.key; const st=wkState(n); st[k]=!st[k];
+    sess.classList.toggle("on",st[k]); sess.setAttribute("aria-pressed",st[k]);
+    save(); refreshWeekRing(n); maybeToastWeek(n); return; }
+
+  const pd=e.target.closest(".pday");
+  if(pd){ const n=+pd.dataset.wk,i=+pd.dataset.p; const st=wkState(n); st.p[i]=!st.p[i];
+    pd.classList.toggle("on",st.p[i]); pd.setAttribute("aria-pressed",st.p[i]);
+    save(); refreshWeekRing(n); maybeToastWeek(n); return; }
+
+  const hk=e.target.closest("[data-hike]");
+  if(hk){ const f=hk.dataset.hike; state.hikes[f]=!state.hikes[f]; save();
+    toast(state.hikes[f]?"¡Caminata completada! 🏔️":"Marcada como pendiente"); render(); return; }
+});
+function maybeToastWeek(n){ const w=DATA.weeks.find(x=>x.n===n); if(w && weekDone(w)>=weekTotals(w)) toast("¡Semana "+n+" completa! 💪"); }
+
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{ ACTIVE=t.dataset.tab; render(); }));
+
+/* export / import / reset */
+function doExport(){
+  const blob=new Blob([JSON.stringify({app:"chirripo",version:1,exported:new Date().toISOString(),state},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="respaldo-chirripo-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  URL.revokeObjectURL(a.href); toast("Respaldo descargado");
+}
+function doImport(e){
+  const f=e.target.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); const s=d.state||d;
+    if(s && (s.weeks||s.hikes)){ state={weeks:s.weeks||{},hikes:s.hikes||{}}; save(); render(); toast("Respaldo importado"); }
+    else toast("Archivo no válido"); }catch(err){ toast("No se pudo leer el archivo"); } };
+  r.readAsText(f); e.target.value="";
+}
+function doReset(){
+  if(confirm("¿Borrar todo tu progreso marcado? Esto no se puede deshacer (podés exportar antes).")){
+    state={weeks:{},hikes:{}}; save(); render(); toast("Progreso reiniciado");
+  }
+}
+
+/* ---------------- countdown tick ---------------- */
+function tick(){
+  const now=new Date(), diff=SUMMIT-now;
+  const d=Math.max(0,Math.floor(diff/86400000));
+  const h=Math.max(0,Math.floor(diff/3600000)%24);
+  const m=Math.max(0,Math.floor(diff/60000)%60);
+  const s=Math.max(0,Math.floor(diff/1000)%60);
+  const hd=document.getElementById("hdr-days"); if(hd) hd.textContent=d;
+  const cd=document.getElementById("cd-d"); if(cd){ cd.textContent=d;
+    document.getElementById("cd-h").textContent=String(h).padStart(2,"0");
+    document.getElementById("cd-m").textContent=String(m).padStart(2,"0");
+    document.getElementById("cd-s").textContent=String(s).padStart(2,"0"); }
+}
+
+/* ---------------- boot ---------------- */
+render();
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
